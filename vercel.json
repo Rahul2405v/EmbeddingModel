@@ -4,7 +4,6 @@
     { "src": "embed.py", "use": "@vercel/python" }
   ],
   "routes": [
-    { "src": "/embed", "dest": "embed.py" },
-    { "src": "/(.*)", "status": 404, "dest": "embed.py" }
+    { "src": "/(.*)", "dest": "embed.py" }
   ]
 }
