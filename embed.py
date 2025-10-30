@@ -4,13 +4,13 @@ import requests
 
 app = Flask(__name__)
 
-HF_TOKEN = os.getenv("HF_API_KEY")
+HF_API_KEY = os.getenv("HF_API_KEY")
 if not HF_TOKEN:
     raise ValueError("❌ Missing HF_TOKEN environment variable.")
 
 BASE_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"
 HEADERS = {
-    "Authorization": f"Bearer {HF_TOKEN}",
+    "Authorization": f"Bearer {HF_API_KEY}",
     "Content-Type": "application/json"
 }
 
@@ -77,3 +77,4 @@ def similarity():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
+
