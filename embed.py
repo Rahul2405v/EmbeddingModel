@@ -1,37 +1,33 @@
 from flask import Flask, request, jsonify
-import google.generativeai as genai
+import requests
 import os
 
 app = Flask(__name__)
 
-os.environ["GOOGLE_API_KEY"] = os.getenv("GENAI_API_KEY")
+HF_API_KEY = os.getenv("HF_API_KEY")
 
-genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-
-@app.route("/api/embed", methods=["POST"])
+@app.route("/embed", methods=["POST"])
 def embed_text():
-    try:
-        data = request.get_json()
-        text = data.get("text", None)
-        if not text:
-            return jsonify({"error": "Missing 'text' in request body"}), 400
+    data = request.get_json()
+    text = data.get("text")
 
-        result = genai.embed_content(
-            model="models/embedding-001",
-            content=text
-        )
+    if not text:
+        return jsonify({"error": "Missing 'text' field"}), 400
 
-        embedding = result.get("embedding", [])
+    headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+    payload = {"inputs": text}
 
-        return jsonify({
-            "text": text,
-            "embedding": embedding,
-            "dimensions": len(embedding)
-        })
+    response = requests.post(
+        "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2",
+        headers=headers,
+        json=payload
+    )
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if response.status_code != 200:
+        return jsonify({"error": response.text}), response.status_code
 
+    embedding = response.json()[0]
+    return jsonify({"embedding": embedding, "dimensions": len(embedding)})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=8000)
